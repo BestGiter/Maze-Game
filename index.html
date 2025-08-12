@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html style="background-color: darkgray;">
+  <head>
+    <style>
+      #game {
+        white-space: pre;
+      }
+      .centered {
+        display: flex;
+        justify-content: center;
+      }
+      .controls {
+        display: grid;
+        grid-template-columns: 60px 60px 60px;
+        grid-template-rows: 60px 60px;
+        gap: 5px;
+        justify-content: center;
+        margin-top: 10px;
+      }
+      .controls button {
+        color: white;
+        font-size: 30px;
+        background-color: gray;
+        user-select: none;
+        width: 60px;
+        height: 60px;
+      }
+      .controls button:hover {
+        transform: scale(1.1);
+        transition: all 0.2s ease;
+        cursor: pointer;
+      }
+      .controls button:active {
+        transform: scale(0.8);
+        transition: all 0.2s ease;
+        cursor: pointer;
+      }
+      #retryBtn {
+        font-size: 24px;
+        padding: 10px 20px;
+        background-color: #5b5b5b;
+        color: white;
+        border: 4px solid white;
+        border-radius: 8px;
+        margin-top: 20px;
+        display: none;
+      }
+
+      .centered-button {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+      }
+      #retryBtn:hover {
+        transform: scale(1.1);
+        transition: all 0.2s ease;
+        cursor: pointer;
+      }
+      #retryBtn:active {
+        transform: scale(0.8);
+        transition: all 0.2s ease;
+        cursor: pointer;
+      }
+     .game-grid {
+        display: grid;
+        justify-content: center;
+        gap: 2px;
+        margin-top: 10px;
+      }
+
+      .game-cell {
+        width: 40px;
+        height: 40px;
+        font-size: 28px;
+        text-align: center;
+        line-height: 40px;
+      }
+    </style>
+    <title>Short "game"</title>
+  </head>
+  <body>
+    <div class="centered">
+      <h1 id="title">Maze Game</h1>
+    </div>
+    <div class="centered">
+      <h3 id="coincounter" style="font-family: monospace;">Coins: 0</h3></br>
+    </div>
+    <div class="centered">
+      <div id="game" class="game-grid"></div>
+    </div>
+    <div class="controls">
+      <div></div>
+      <button onclick="up()" style="border: 4px solid red;">🡅</button>
+      <div></div>
+      <button onclick="left()" style="border: 4px solid orange;">🡄</button>
+      <button onclick="down()" style="border: 4px solid yellow;">🡇</button>
+      <button onclick="right()" style="border: 4px solid green;">🡆</button>
+    </div>
+    <div class="centered-button">
+      <button id="retryBtn" onclick="start()" style="display: none;">Retry</button>
+    </div>
+    <script src="game.js"></script>
+  </body>
+</html>
