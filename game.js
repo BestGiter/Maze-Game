@@ -1,26 +1,32 @@
 let coins, dimensions, player, done, hasKey;
 let currentLevel = 0;
 let processedLevels = [];
+let editorMode = false;
+let playerskin = 0;
+player = [1, 2];
 const convert = {
   "#": "🧱",
   "_": " ",
   "$": "💵",
   "0": "🪙",
-  "P": "😀",
+  "P0": "😀",
+  "P1": "☹️",
+  "P2": "🥱",
   "K": "🗝️",
   "D": "🚪",
-  "f": "🔥"
+  "f": "🔥",
+  "x": "❓"
 };
 const levels = [
-  [
+  {"level":[
     ['#','#','#','#','#','#','#','#'],
     ['#','0','_','_','#','_','_','#'],
     ['#','_','_','_','D','$','_','#'],
     ['#','K','_','0','#','_','_','#'],
     ['#','_','_','_','f','_','_','#'],
     ['#','#','#','#','#','#','#','#']
-  ],
-  [
+  ],"player":[1,2]},
+  {"level":[
     ['#','#','#','#','#','#','#','#'],
     ['#','_','_','0','#','x','x','#'],
     ['#','_','K','_','D','_','x','#'],
@@ -33,13 +39,37 @@ const levels = [
     ['#','_','_','_','#','_','x','#'],
     ['#','0','_','_','f','x','x','#'],
     ['#','#','#','#','#','#','#','#'],
-  ]
+  ],"player":[1,2]}
 ];
 document.addEventListener("keydown", function(event) {
   const keysToBlock = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
   if (keysToBlock.includes(event.key)) {
-    event.preventDefault(); // Stops the browser from scrolling
+    event.preventDefault();
   }
+
+  if (editorMode) {
+    const keyMap = {
+      "1": "_",
+      "2": "#",
+      "3": "0",
+      "4": "$",
+      "5": "K",
+      "6": "D",
+      "7": "f",
+      "8": "x",
+      "9": "P"
+    };
+    if (keyMap[event.key]) {
+      selectedType = keyMap[event.key];
+      updateSelectedTileDisplay();
+    }
+    if (event.key === "e") {
+      console.log("Exported level:");
+      console.log(JSON.stringify(game));
+    }
+    return;
+  }
+
   switch (event.key) {
     case "ArrowUp":
     case "w":
@@ -68,6 +98,20 @@ document.addEventListener("keydown", function(event) {
   }
 });
 
+document.getElementById("editorBtn").onclick = () => {
+  if (editorMode) {
+    // Exit editor and play the level
+    editorMode = false;
+    processedLevels = []; // clear cache so 'x' tiles re-randomize if needed
+    levels.push({"level":JSON.parse(JSON.stringify(game)),"player":JSON.parse(JSON.stringify(player))}); // add edited level to levels
+    currentLevel = levels.length - 1;
+    start();
+  } else {
+    editorMode = true;
+    startEditor();
+  }
+};
+
 start();
 
 function start() {
@@ -79,7 +123,7 @@ function start() {
 
   if (!processedLevels[currentLevel]) {
     // First time loading this level — randomize 'x'
-    let raw = JSON.parse(JSON.stringify(levels[currentLevel]));
+    let raw = JSON.parse(JSON.stringify(levels[currentLevel]))["level"];
     for (let r = 0; r < raw.length; r++) {
       for (let c = 0; c < raw[r].length; c++) {
         if (raw[r][c] === "x") {
@@ -87,12 +131,12 @@ function start() {
         }
       }
     }
-    processedLevels[currentLevel] = raw;
+    processedLevels[currentLevel] = {"level":raw,"player":JSON.parse(JSON.stringify(levels[currentLevel]))["player"]};
   }
-
-  game = JSON.parse(JSON.stringify(processedLevels[currentLevel]));
+  
+  game = JSON.parse(JSON.stringify(processedLevels[currentLevel]))["level"];
+  player = JSON.parse(JSON.stringify(processedLevels[currentLevel]))["player"];
   dimensions = [game.length, game[0].length];
-  player = [1, 2];
   doUpdate();
 }
 
@@ -155,27 +199,6 @@ function doUpdate() {
   renderGame();
 }
 
-function renderGame() {
-  const grid = document.getElementById("game");
-  grid.innerHTML = ""; // Clear previous
-
-  grid.style.gridTemplateColumns = `repeat(${dimensions[1]}, 40px)`;
-  grid.style.gridTemplateRows = `repeat(${dimensions[0]}, 40px)`;
-
-  for (let r = 0; r < dimensions[0]; r++) {
-    for (let c = 0; c < dimensions[1]; c++) {
-      const cell = document.createElement("div");
-      cell.className = "game-cell";
-
-      let symbol = game[r][c];
-      if (r === player[0] && c === player[1]) symbol = "P";
-
-      cell.textContent = convert[symbol] || symbol;
-      grid.appendChild(cell);
-    }
-  }
-}
-
 function canMoveTo(r, c) {
   return game[r][c] !== "#" && (game[r][c] !== "D" || (game[r][c] == "D" && hasKey));
 }
@@ -193,6 +216,11 @@ function move(deltaRow, deltaCol) {
   doUpdate();
 }
 
+function updateSelectedTileDisplay() {
+  document.getElementById("selectedTile").textContent =
+    "Selected: " + (convert[selectedType] || selectedType);
+}
+
 function up() {
   move(-1, 0);
 }
@@ -207,4 +235,68 @@ function left() {
 
 function right() {
   move(0, 1);
+}
+
+let selectedType = "_";
+const tileTypes = ["_", "#", "0", "$", "K", "D", "f", "x", "P"];
+
+function startEditor() {
+  const width = parseInt(prompt("Enter grid width:", "8"));
+  const height = parseInt(prompt("Enter grid height:", "6"));
+  if (isNaN(width) || isNaN(height)) return;
+
+  // Create empty level
+  game = [];
+  for (let r = 0; r < height; r++) {
+    const row = [];
+    for (let c = 0; c < width; c++) {
+      row.push("_");
+    }
+    game.push(row);
+  }
+
+  dimensions = [height, width];
+  player = [0, 0]; // default player position
+  renderGame();
+}
+
+function updateSelectedTileDisplay() {
+  const display = document.getElementById("selectedTile");
+  if (display) {
+    display.textContent = "Selected: " + (convert[selectedType] || selectedType);
+  }
+}
+
+function renderGame() {
+  const grid = document.getElementById("game");
+  grid.innerHTML = "";
+
+  grid.style.gridTemplateColumns = `repeat(${dimensions[1]}, 40px)`;
+  grid.style.gridTemplateRows = `repeat(${dimensions[0]}, 40px)`;
+
+  for (let r = 0; r < dimensions[0]; r++) {
+    for (let c = 0; c < dimensions[1]; c++) {
+      const cell = document.createElement("div");
+      cell.className = "game-cell";
+
+      let symbol = game[r][c];
+      if (r === player[0] && c === player[1]) symbol = "P"+(playerskin%3);
+
+      cell.textContent = convert[symbol] || symbol;
+
+      if (editorMode) {
+        cell.style.cursor = "pointer";
+        cell.addEventListener("click", () => {
+          if (selectedType === "P") {
+            player = [r, c];
+          } else {
+            game[r][c] = selectedType;
+          }
+          renderGame();
+        });
+      }
+
+      grid.appendChild(cell);
+    }
+  }
 }
