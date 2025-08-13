@@ -70,21 +70,24 @@
       }
 
       .game-cell {
+        user-select: none;
         width: 40px;
         height: 40px;
         font-size: 28px;
         text-align: center;
         line-height: 40px;
+        
       }
     </style>
-    <title>Short "game"</title>
+    <title>Maze game</title>
   </head>
   <body>
     <div class="centered">
-      <h1 id="title">Maze Game</h1>
+      <h1 id="title" style="font-family: monospace;">Maze Game</h1>
     </div>
     <div class="centered">
-      <h3 id="coincounter" style="font-family: monospace;">Coins: 0</h3></br>
+      <h3 id="coincounter" style="font-family: monospace;">Coins: 0</h3>&nbsp;&nbsp;&nbsp;
+      <h3 id="levelcounter" style="font-family: monospace;">Level: 0</h3></br>
     </div>
     <div class="centered">
       <div id="game" class="game-grid"></div>
