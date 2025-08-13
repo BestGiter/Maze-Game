@@ -1,5 +1,6 @@
 let coins, dimensions, player, done, hasKey;
-
+let currentLevel = 0;
+let processedLevels = [];
 const convert = {
   "#": "🧱",
   "_": " ",
@@ -10,8 +11,35 @@ const convert = {
   "D": "🚪",
   "f": "🔥"
 };
-
+const levels = [
+  [
+    ['#','#','#','#','#','#','#','#'],
+    ['#','0','_','_','#','_','_','#'],
+    ['#','_','_','_','D','$','_','#'],
+    ['#','K','_','0','#','_','_','#'],
+    ['#','_','_','_','f','_','_','#'],
+    ['#','#','#','#','#','#','#','#']
+  ],
+  [
+    ['#','#','#','#','#','#','#','#'],
+    ['#','_','_','0','#','x','x','#'],
+    ['#','_','K','_','D','_','x','#'],
+    ['#','_','_','_','#','_','_','#'],
+    ['#','0','_','_','f','_','_','#'],
+    ['#','#','#','#','#','#','_','#'],
+    ['#','#','#','#','#','#','_','#'],
+    ['#','_','_','0','#','_','_','#'],
+    ['#','_','K','_','D','$','_','#'],
+    ['#','_','_','_','#','_','x','#'],
+    ['#','0','_','_','f','x','x','#'],
+    ['#','#','#','#','#','#','#','#'],
+  ]
+];
 document.addEventListener("keydown", function(event) {
+  const keysToBlock = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
+  if (keysToBlock.includes(event.key)) {
+    event.preventDefault(); // Stops the browser from scrolling
+  }
   switch (event.key) {
     case "ArrowUp":
     case "w":
@@ -35,7 +63,7 @@ document.addEventListener("keydown", function(event) {
       break;
     case "r":
     case "R":
-      start();
+      document.getElementById("retryBtn").onclick();
       break;
   }
 });
@@ -43,21 +71,29 @@ document.addEventListener("keydown", function(event) {
 start();
 
 function start() {
+  document.getElementById("coincounter").innerText = "Coins: 0";
   document.getElementById("retryBtn").style.display = "none";
-  hasKey = false
-  game = [
-    ['#','#','#','#','#','#','#','#'],
-    ['#','0','_','_','#','_','_','#'],
-    ['#','_','_','_','D','$','_','#'],
-    ['#','K','_','0','#','_','_','#'],
-    ['#','_','_','_','f','_','_','#'],
-    ['#','#','#','#','#','#','#','#']
-  ];
+  hasKey = false;
   coins = 0;
-  dimensions = [game.length, game[0].length];
-  player = [1, 2]; // row, column
   done = false;
-  renderGame();
+
+  if (!processedLevels[currentLevel]) {
+    // First time loading this level — randomize 'x'
+    let raw = JSON.parse(JSON.stringify(levels[currentLevel]));
+    for (let r = 0; r < raw.length; r++) {
+      for (let c = 0; c < raw[r].length; c++) {
+        if (raw[r][c] === "x") {
+          raw[r][c] = Math.random() < 0.5 ? "_" : "f";
+        }
+      }
+    }
+    processedLevels[currentLevel] = raw;
+  }
+
+  game = JSON.parse(JSON.stringify(processedLevels[currentLevel]));
+  dimensions = [game.length, game[0].length];
+  player = [1, 2];
+  doUpdate();
 }
 
 function playSound(src) {
@@ -66,12 +102,28 @@ function playSound(src) {
 }
 
 function doUpdate() {
+  retrybtn = document.getElementById("retryBtn")
   switch (game[player[0]][player[1]]) {
     case "$":
-      done = true;
-      document.getElementById("game").innerText = "You win";
       playSound("winsound.m4a");
-      document.getElementById("retryBtn").style.display = "inline-block";
+      currentLevel++;
+      if (currentLevel >= levels.length) {
+        document.getElementById("game").innerText = "You beat all levels!";
+        done = true;
+        retrybtn.innerText = "Restart to beginning"
+        retrybtn.onclick = function() {
+          currentLevel = 0;
+          document.getElementById("levelcounter").innerText = "Level: 0";
+          retrybtn = document.getElementById("retryBtn");
+          retrybtn.innerText = "Retry";
+          retrybtn.onclick = function () { start(); };
+          start();
+        };
+        retrybtn.style.display = "inline-block";
+      } else {
+        document.getElementById("levelcounter").innerText = "Level: "+currentLevel;
+        start(); // Load next level
+      }
       return;
     case "0":
       coins++;
@@ -90,6 +142,7 @@ function doUpdate() {
     case "f":
       done = true;
       document.getElementById("game").innerText = "You died";
+      retrybtn.style.display = "inline-block";
       playSound("deathsound.m4a")
       return;
   }
