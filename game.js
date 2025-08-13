@@ -120,6 +120,9 @@ function doUpdate() {
           start();
         };
         retrybtn.style.display = "inline-block";
+        const grid = document.getElementById("game");
+        grid.style.gridTemplateColumns = "none";
+        grid.style.gridTemplateRows = "none";
       } else {
         document.getElementById("levelcounter").innerText = "Level: "+currentLevel;
         start(); // Load next level
@@ -144,6 +147,9 @@ function doUpdate() {
       document.getElementById("game").innerText = "You died";
       retrybtn.style.display = "inline-block";
       playSound("deathsound.m4a")
+      const grid = document.getElementById("game");
+      grid.style.gridTemplateColumns = "none";
+      grid.style.gridTemplateRows = "none";
       return;
   }
   renderGame();
