@@ -1,4 +1,4 @@
-let coins, dimensions, player, won, hasKey;
+let coins, dimensions, player, done, hasKey;
 
 const convert = {
   "#": "🧱",
@@ -7,7 +7,8 @@ const convert = {
   "0": "🪙",
   "P": "😀",
   "K": "🗝️",
-  "D": "🚪"
+  "D": "🚪",
+  "f": "🔥"
 };
 
 document.addEventListener("keydown", function(event) {
@@ -49,12 +50,13 @@ function start() {
     ['#','0','_','_','#','_','_','#'],
     ['#','_','_','_','D','$','_','#'],
     ['#','K','_','0','#','_','_','#'],
+    ['#','_','_','_','f','_','_','#'],
     ['#','#','#','#','#','#','#','#']
   ];
   coins = 0;
   dimensions = [game.length, game[0].length];
   player = [1, 2]; // row, column
-  won = false;
+  done = false;
   renderGame();
 }
 
@@ -66,7 +68,7 @@ function playSound(src) {
 function doUpdate() {
   switch (game[player[0]][player[1]]) {
     case "$":
-      won = true;
+      done = true;
       document.getElementById("game").innerText = "You win";
       playSound("winsound.m4a");
       document.getElementById("retryBtn").style.display = "inline-block";
@@ -85,6 +87,11 @@ function doUpdate() {
       playSound("doorsound.m4a")
       game[player[0]][player[1]] = "_";
       break;
+    case "f":
+      done = true;
+      document.getElementById("game").innerText = "You died";
+      playSound("deathsound.m4a")
+      return;
   }
   renderGame();
 }
@@ -115,7 +122,7 @@ function canMoveTo(r, c) {
 }
 
 function move(deltaRow, deltaCol) {
-  if (won) return;
+  if (done) return;
   let newRow = player[0] + deltaRow;
   let newCol = player[1] + deltaCol;
   if (
