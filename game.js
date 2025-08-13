@@ -156,6 +156,7 @@ function doUpdate() {
         done = true;
         retrybtn.innerText = "Restart to beginning"
         retrybtn.onclick = function() {
+          processedLevels = [];
           currentLevel = 0;
           document.getElementById("levelcounter").innerText = "Level: 0";
           retrybtn = document.getElementById("retryBtn");
