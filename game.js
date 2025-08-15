@@ -3,6 +3,7 @@ let currentLevel = 0;
 let processedLevels = [];
 let editorMode = false;
 let playerskin = 0;
+let mode = true;
 player = [1, 2];
 const convert = {
   "#": "🧱",
@@ -283,7 +284,7 @@ function renderGame() {
       let symbol = game[r][c];
       if (r === player[0] && c === player[1]) symbol = "P"+(playerskin%3);
 
-      cell.textContent = convert[symbol] || symbol;
+      cell.textContent = mode ? (convert[symbol] || symbol) : (symbol);
 
       if (editorMode) {
         cell.style.cursor = "pointer";
